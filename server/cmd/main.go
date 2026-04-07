@@ -6,6 +6,9 @@ import (
 	"vibeblog/server/internal/shared/config"
 	"vibeblog/server/internal/shared/database"
 	"vibeblog/server/internal/router"
+
+	authModel "vibeblog/server/internal/modules/auth/model"
+	blogModel "vibeblog/server/internal/modules/blog/model"
 )
 
 func main() {
@@ -21,6 +24,18 @@ func main() {
 	if err := database.InitRedis(&cfg.Redis); err != nil {
 		log.Printf("Redis init failed: %v, continuing without cache", err)
 	}
+
+	// 自动迁移数据库表
+	if err := authModel.AutoMigrate(); err != nil {
+		log.Fatalf("Auth model migration failed: %v", err)
+	}
+	if err := blogModel.AutoMigrateArticle(); err != nil {
+		log.Fatalf("Blog model migration failed: %v", err)
+	}
+	if err := blogModel.AutoMigrateSiteConfig(); err != nil {
+		log.Fatalf("Site config migration failed: %v", err)
+	}
+	log.Println("Database migration completed")
 
 	// 设置路由
 	r := router.SetupRouter(cfg)
