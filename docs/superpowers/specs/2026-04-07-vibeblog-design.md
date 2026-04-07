@@ -386,16 +386,66 @@ vibeBlog/
 ```sql
 CREATE TABLE site_config (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    key VARCHAR(50) NOT NULL UNIQUE,
+    config_key VARCHAR(50) NOT NULL UNIQUE,
     value TEXT,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- 预置配置项
-INSERT INTO site_config (key, value) VALUES
+INSERT INTO site_config (config_key, value) VALUES
 ('about_content', '# 关于我\nMarkdown内容'),
 ('avatar', 'https://example.com/avatar.jpg'),
 ('social_links', '{"github":"https://github.com/user","twitter":"https://twitter.com/user"}');
+```
+
+**GET /api/blog/tags**
+```json
+// Response
+{
+  "data": [
+    { "id": 1, "name": "Go", "slug": "go", "article_count": 10 },
+    { "id": 2, "name": "React", "slug": "react", "article_count": 5 }
+  ]
+}
+```
+
+**GET /api/blog/archive**
+```json
+// Response
+{
+  "data": {
+    "2026": { "04": 5, "03": 3 },
+    "2025": { "12": 8, "11": 4 }
+  }
+}
+```
+
+**GET /api/site/config**
+```json
+// Response
+{
+  "data": {
+    "about_content": "# 关于我\nMarkdown内容",
+    "avatar": "https://example.com/avatar.jpg",
+    "social_links": { "github": "...", "twitter": "..." }
+  }
+}
+```
+
+**PUT /api/admin/site/config**
+```json
+// Request
+{
+  "about_content": "更新后的内容",
+  "avatar": "https://new-avatar.jpg",
+  "social_links": { "github": "...", "email": "..." }
+}
+
+// Response
+{
+  "data": { "about_content": "...", ... },
+  "message": "配置更新成功"
+}
 ```
 
 ### Slug 生成规则
@@ -432,7 +482,7 @@ CREATE TABLE users (
 CREATE TABLE articles (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(255) NOT NULL,
-    slug VARCHAR(255) UNIQUE,
+    slug VARCHAR(50) UNIQUE,
     summary TEXT,
     content LONGTEXT,
     cover_image VARCHAR(255),
