@@ -735,6 +735,7 @@ package utils
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 	"unicode"
 )
@@ -799,7 +800,7 @@ func MakeUniqueSlug(baseSlug string, exists bool, count int) string {
 	if !exists {
 		return baseSlug
 	}
-	return baseSlug + "-" + string(rune(count))
+	return baseSlug + "-" + strconv.Itoa(count)
 }
 ```
 
@@ -827,8 +828,6 @@ git commit -m "feat: add slug generation utility with basic pinyin support"
 package middleware
 
 import (
-	"time"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -847,6 +846,19 @@ func CORS() gin.HandlerFunc {
 		c.Next()
 	}
 }
+```
+
+- [ ] **Step 2: 创建 Logger 中间件**
+
+```go
+// server/internal/shared/middleware/logger.go
+package middleware
+
+import (
+	"time"
+
+	"github.com/gin-gonic/gin"
+)
 
 func Logger() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -1171,26 +1183,71 @@ func AutoMigrateSiteConfig() error {
 
 - [ ] **Step 5: 更新入口文件添加迁移**
 
-在 `server/cmd/main.go` 的数据库初始化后添加：
+将 `server/cmd/main.go` 更新为完整版本：
 
 ```go
-// 自动迁移数据库表
+// server/cmd/main.go
+package main
+
 import (
+	"log"
+	"vibeblog/server/internal/shared/config"
+	"vibeblog/server/internal/shared/database"
+	"vibeblog/server/internal/shared/utils"
+	"vibeblog/server/internal/router"
 	authModel "vibeblog/server/internal/modules/auth/model"
 	blogModel "vibeblog/server/internal/modules/blog/model"
+	authService "vibeblog/server/internal/modules/auth/service"
 )
 
-// 在 database.InitMySQL 后添加：
-if err := authModel.AutoMigrate(); err != nil {
-	log.Fatalf("Auth model migration failed: %v", err)
+func main() {
+	// 加载配置
+	cfg := config.Load()
+
+	// 初始化数据库
+	if err := database.InitMySQL(&cfg.Database); err != nil {
+		log.Fatalf("MySQL init failed: %v", err)
+	}
+
+	// 初始化 Redis
+	if err := database.InitRedis(&cfg.Redis); err != nil {
+		log.Printf("Redis init failed: %v, continuing without cache", err)
+	}
+
+	// 初始化 JWT
+	utils.InitJWT(&cfg.JWT)
+
+	// 自动迁移数据库表
+	if err := authModel.AutoMigrate(); err != nil {
+		log.Fatalf("Auth model migration failed: %v", err)
+	}
+	if err := blogModel.AutoMigrateArticle(); err != nil {
+		log.Fatalf("Blog model migration failed: %v", err)
+	}
+	if err := blogModel.AutoMigrateSiteConfig(); err != nil {
+		log.Fatalf("Site config migration failed: %v", err)
+	}
+	log.Println("Database migration completed")
+
+	// 初始化默认用户
+	authSvc := authService.NewAuthService(&cfg.JWT)
+	if err := authSvc.InitDefaultUser(); err != nil {
+		log.Printf("Init default user failed: %v", err)
+	}
+
+	// 设置路由
+	r := router.SetupRouter(cfg)
+
+	// 启动服务
+	log.Printf("Server starting on port %s", cfg.Server.Port)
+	if err := r.Run(":" + cfg.Server.Port); err != nil {
+		log.Fatalf("Server failed: %v", err)
+	}
+
+	// 清理（实际不会执行到这里）
+	database.CloseMySQL()
+	database.CloseRedis()
 }
-if err := blogModel.AutoMigrateArticle(); err != nil {
-	log.Fatalf("Blog model migration failed: %v", err)
-}
-if err := blogModel.AutoMigrateSiteConfig(); err != nil {
-	log.Fatalf("Site config migration failed: %v", err)
-}
-log.Println("Database migration completed")
 ```
 
 - [ ] **Step 6: 验证表创建**
@@ -2225,17 +2282,36 @@ export default function LoginPage() {
 - [ ] **Step 3: 更新 App.tsx 注册路由**
 
 ```tsx
-// web/src/App.tsx 添加登录路由
+// web/src/App.tsx
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import LoginPage from '@/modules/auth/pages/LoginPage'
 
-// 在 Routes 中添加
-<Route path="/login" element={<LoginPage />} />
+const queryClient = new QueryClient()
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<div className="p-8 text-2xl">VibeBlog 首页</div>} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/admin" element={<div className="p-8 text-2xl">管理后台（待开发）</div>} />
+        </Routes>
+      </BrowserRouter>
+    </QueryClientProvider>
+  )
+}
+
+export default App
 ```
 
 - [ ] **Step 4: 配置路径别名**
 
 ```typescript
-// web/vite.config.ts 添加路径别名
+// web/vite.config.ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 import path from 'path'
 
 export default defineConfig({
@@ -2249,14 +2325,31 @@ export default defineConfig({
 ```
 
 ```json
-// web/tsconfig.json 添加 paths
+// web/tsconfig.json
 {
   "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
     }
-  }
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }
 ```
 
@@ -2277,9 +2370,121 @@ git commit -m "feat: add login page with auth hook and route alias"
 
 ---
 
-## Phase 3-5 简要概述
+### Task 2.9: 完整 Docker Compose 配置
 
-由于篇幅限制，Phase 3-5 的详细任务在后续计划中补充。以下是主要任务概览：
+**Files:**
+- Modify: `docker-compose.yml`
+
+- [ ] **Step 1: 更新完整的 docker-compose.yml**
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: vibeblog-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: vibeblog_root
+      MYSQL_DATABASE: vibe_blog
+      MYSQL_USER: vibeblog
+      MYSQL_PASSWORD: vibeblog123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: vibeblog-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: vibeblog-server
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=vibeblog
+      - DB_PASSWORD=vibeblog123
+      - DB_NAME=vibe_blog
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=vibeblog-dev-secret
+      - SERVER_PORT=8080
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./server:/app
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile.dev
+    container_name: vibeblog-web
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./web/src:/app/src
+      - ./web/public:/app/public
+      - ./web/index.html:/app/index.html
+      - ./web/vite.config.ts:/app/vite.config.ts
+      - ./web/tailwind.config.js:/app/tailwind.config.js
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8080
+
+volumes:
+  mysql_data:
+```
+
+- [ ] **Step 2: 重启所有服务验证**
+
+```bash
+docker-compose down
+docker-compose up -d --build
+docker-compose ps
+# Expected: 所有服务状态为 healthy/running
+
+curl http://localhost:8080/health
+# Expected: {"status":"ok"}
+
+curl http://localhost:5173
+# Expected: HTML 页面内容
+```
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add docker-compose.yml
+git commit -m "feat: add complete docker-compose with all services"
+```
+
+---
+
+## Phase 3-5: 后续计划说明
+
+> **注意**: 本计划聚焦于 Phase 1-2（基础设施 + 认证模块），这是整个系统的基础骨架。Phase 3-5 的详细任务将在完成 Phase 1-2 后，基于验证过的架构编写单独的计划文档。
+
+以下是 Phase 3-5 的任务概览，作为后续规划的参考：
 
 ### Phase 3: 博客前台
 - Task 3.1: 文章 Repository/Service/Handler
@@ -2314,6 +2519,13 @@ git commit -m "feat: add login page with auth hook and route alias"
 - Task 5.6: 后端单元测试
 - Task 5.7: 前端组件测试
 - Task 5.8: E2E 测试
+
+**Phase 1-2 完成后的验收标准:**
+1. Docker Compose 能启动 MySQL + Redis + 后端 + 前端
+2. 后端健康检查 `/health` 返回 200
+3. 登录 API `/api/auth/login` 正常工作（admin/admin123）
+4. 前端能访问 `/login` 并成功登录
+5. 数据库表结构正确创建
 
 ---
 
