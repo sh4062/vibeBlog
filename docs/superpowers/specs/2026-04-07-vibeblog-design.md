@@ -388,6 +388,7 @@ CREATE TABLE site_config (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     config_key VARCHAR(50) NOT NULL UNIQUE,
     value TEXT,
+    ext JSON,  -- 扩展字段：配置元数据、版本信息等
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
@@ -472,6 +473,7 @@ CREATE TABLE users (
     avatar VARCHAR(255),
     email VARCHAR(100),
     role VARCHAR(20) DEFAULT 'author',
+    ext JSON,  -- 扩展字段：额外个人信息、偏好设置等
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -491,6 +493,7 @@ CREATE TABLE articles (
     scheduled_at TIMESTAMP NULL,
     view_count INT DEFAULT 0,
     author_id BIGINT,
+    ext JSON,  -- 扩展字段：自定义排序、来源链接、置顶权重等
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (author_id) REFERENCES users(id)
@@ -504,6 +507,7 @@ CREATE TABLE tags (
     name VARCHAR(50) NOT NULL UNIQUE,
     slug VARCHAR(50) UNIQUE,
     description VARCHAR(255),
+    ext JSON,  -- 扩展字段：标签颜色、图标、排序权重等
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
