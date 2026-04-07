@@ -49,6 +49,14 @@
 - 单用户登录（预留多用户扩展）
 - Token 刷新机制
 
+#### JWT 配置
+- **算法**: HS256
+- **Access Token**: 有效期 15 分钟，存储在 localStorage
+- **Refresh Token**: 有效期 7 天，存储在 localStorage
+- **请求格式**: `Authorization: Bearer <token>`
+- **密钥管理**: 从环境变量 `JWT_SECRET` 读取，生产环境使用强随机字符串
+- **密码哈希**: bcrypt，cost factor = 10
+
 ## 架构设计
 
 ### 项目结构
@@ -163,6 +171,244 @@ vibeBlog/
 | POST | `/api/admin/tags` | 创建标签 |
 | PUT | `/api/admin/tags/:id` | 更新标签 |
 | DELETE | `/api/admin/tags/:id` | 删除标签 |
+
+### API 请求/响应规范
+
+#### 统一响应格式
+```json
+// 成功响应
+{
+  "data": { ... },
+  "message": "操作成功"
+}
+
+// 分页响应
+{
+  "data": [ ... ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 100,
+    "pages": 10
+  }
+}
+
+// 错误响应
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "标题不能为空"
+  }
+}
+```
+
+#### HTTP 状态码规范
+| 状态码 | 说明 |
+|--------|------|
+| 200 | 成功 |
+| 201 | 创建成功 |
+| 400 | 请求参数错误 |
+| 401 | 未认证 |
+| 403 | 无权限 |
+| 404 | 资源不存在 |
+| 500 | 服务器错误 |
+
+#### 认证 API 详情
+
+**POST /api/auth/login**
+```json
+// Request
+{ "username": "admin", "password": "password123" }
+
+// Response
+{
+  "data": {
+    "access_token": "eyJhbG...",
+    "refresh_token": "eyJhbG...",
+    "user": { "id": 1, "username": "admin", "nickname": "博主" }
+  }
+}
+```
+
+**POST /api/auth/refresh**
+```json
+// Request
+{ "refresh_token": "eyJhbG..." }
+
+// Response
+{
+  "data": {
+    "access_token": "eyJhbG...",
+    "refresh_token": "eyJhbG..."
+  }
+}
+```
+
+#### 博客 API 详情
+
+**GET /api/blog/articles**
+```
+// Query Parameters
+?page=1           // 页码，默认1
+&limit=10         // 每页数量，默认10
+&tag=go           // 按标签筛选（可选）
+&status=published // 状态筛选，公开API仅允许published
+
+// Response
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "文章标题",
+      "slug": "article-slug",
+      "summary": "文章摘要",
+      "cover_image": "https://example.com/cover.jpg",
+      "status": "published",
+      "published_at": "2026-04-07T10:00:00Z",
+      "view_count": 100,
+      "tags": [{ "id": 1, "name": "Go", "slug": "go" }],
+      "created_at": "2026-04-01T08:00:00Z"
+    }
+  ],
+  "pagination": { "page": 1, "limit": 10, "total": 50, "pages": 5 }
+}
+```
+
+**GET /api/blog/articles/:id**
+```json
+// Response
+{
+  "data": {
+    "id": 1,
+    "title": "文章标题",
+    "slug": "article-slug",
+    "summary": "文章摘要",
+    "content": "# Markdown内容\n...",
+    "cover_image": "https://example.com/cover.jpg",
+    "status": "published",
+    "published_at": "2026-04-07T10:00:00Z",
+    "view_count": 100,
+    "tags": [{ "id": 1, "name": "Go", "slug": "go" }],
+    "author": { "id": 1, "nickname": "博主" },
+    "created_at": "2026-04-01T08:00:00Z",
+    "updated_at": "2026-04-07T10:00:00Z"
+  }
+}
+```
+
+**GET /api/blog/search**
+```
+// Query Parameters
+?q=golang         // 搜索关键词
+&limit=10         // 结果数量限制
+
+// Response
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "Golang入门",
+      "summary": "...",
+      "tags": [...]
+    }
+  ]
+}
+```
+
+**POST /api/admin/articles**
+```json
+// Request
+{
+  "title": "新文章标题",
+  "slug": "new-article",        // 可选，不填则自动生成
+  "summary": "文章摘要",
+  "content": "# Markdown内容",
+  "cover_image": "https://...",  // 可选
+  "tags": [1, 2],               // 标签ID数组
+  "status": "draft"             // draft / published / scheduled
+}
+
+// Response
+{
+  "data": { "id": 10, "title": "新文章标题", ... }
+}
+```
+
+**POST /api/admin/articles/:id/schedule**
+```json
+// Request
+{
+  "scheduled_at": "2026-04-10T08:00:00Z"  // ISO8601格式
+}
+
+// Response
+{
+  "data": { "id": 1, "status": "scheduled", "scheduled_at": "..." }
+}
+```
+
+### 定时发布机制
+
+- **实现方式**: 后端启动后台任务，每分钟轮询数据库
+- **检查逻辑**: 查询 `status = 'scheduled' AND scheduled_at <= NOW()` 的文章
+- **执行动作**: 更新 `status = 'published'`，设置 `published_at = NOW()`
+- **容错处理**: 如果服务器重启，错过的时间点文章会在启动时自动发布
+
+### 文件上传策略
+
+- **当前阶段**: 仅支持外链引用，用户手动填写图片/视频URL
+- **预留扩展**: 后续可添加 `/api/admin/upload` 接口，支持：
+  - 本地文件上传到 `./uploads/` 目录
+  - OSS 云存储（阿里云/腾讯云）
+- **Markdown 图片**: ByteMD 编辑器支持粘贴外链 URL
+
+### Redis 缓存策略
+
+- **文章列表缓存**: 缓存首页文章列表，5分钟过期
+- **文章详情缓存**: 缓存热门文章详情，10分钟过期
+- **标签列表缓存**: 缓存所有标签，1小时过期
+- **缓存Key格式**: `blog:articles:page:{page}`, `blog:article:{id}`, `blog:tags`
+- **缓存更新**: 文章发布/更新时清除相关缓存
+
+### 搜索实现
+
+- **当前阶段**: MySQL LIKE 查询，搜索标题和摘要
+- **SQL**: `WHERE title LIKE '%keyword%' OR summary LIKE '%keyword%'`
+- **预留扩展**: 后续可接入 Elasticsearch 实现全文搜索
+
+### 关于我页面
+
+- **数据来源**: 单独的 `site_config` 表存储站点配置
+- **可编辑内容**: 个人简介、头像、社交链接、技能标签
+- **API**: `GET /api/site/config` 公开获取，`PUT /api/admin/site/config` 管理更新
+
+#### 站点配置表 (site_config)
+```sql
+CREATE TABLE site_config (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    key VARCHAR(50) NOT NULL UNIQUE,
+    value TEXT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 预置配置项
+INSERT INTO site_config (key, value) VALUES
+('about_content', '# 关于我\nMarkdown内容'),
+('avatar', 'https://example.com/avatar.jpg'),
+('social_links', '{"github":"https://github.com/user","twitter":"https://twitter.com/user"}');
+```
+
+### Slug 生成规则
+
+- **自动生成**: 从标题生成，中文转拼音，英文小写，空格/特殊字符替换为 `-`
+- **格式**: 只允许 `a-z0-9-`，长度限制 50 字符
+- **唯一性**: 如果冲突，自动追加 `-1`, `-2` 等
+- **手动指定**: 编辑时可手动填写，需符合格式规范
+
+### 阅读量统计
+
+- **计数方式**: 每次访问详情页 +1，不做去重
+- **预留扩展**: 后续可接入 IP/Cookie 去重，或使用 Redis 独立计数
 
 ### 数据库设计
 
@@ -326,3 +572,15 @@ volumes:
 2. SEO 优化
 3. 性能优化
 4. 生产环境部署配置
+
+## 测试策略
+
+### 后端测试
+- **单元测试**: Go 原生 testing 包，覆盖 service 层核心逻辑
+- **集成测试**: 测试 API 端点，使用测试数据库
+- **覆盖率目标**: 核心业务逻辑 80%+
+
+### 前端测试
+- **组件测试**: Vitest + React Testing Library
+- **E2E 测试**: Playwright（关键流程：登录、发文、浏览）
+- **覆盖率目标**: 核心组件 70%+
