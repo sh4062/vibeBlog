@@ -874,7 +874,7 @@ func Logger() gin.HandlerFunc {
 }
 ```
 
-- [ ] **Step 2: 创建路由模块**
+- [ ] **Step 3: 创建路由模块**
 
 ```go
 // server/internal/router/router.go
@@ -882,10 +882,11 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
+	"vibeblog/server/internal/shared/config"
 	"vibeblog/server/internal/shared/middleware"
 )
 
-func SetupRouter() *gin.Engine {
+func SetupRouter(cfg *config.Config) *gin.Engine {
 	r := gin.New()
 
 	// 中间件
@@ -908,13 +909,13 @@ func SetupRouter() *gin.Engine {
 }
 ```
 
-- [ ] **Step 3: 安装 Gin 依赖**
+- [ ] **Step 4: 安装 Gin 依赖**
 
 ```bash
 cd server && go get github.com/gin-gonic/gin
 ```
 
-- [ ] **Step 4: 更新入口文件**
+- [ ] **Step 5: 更新入口文件**
 
 ```go
 // server/cmd/main.go
@@ -946,7 +947,7 @@ func main() {
 	utils.InitJWT(&cfg.JWT)
 
 	// 设置路由
-	r := router.SetupRouter()
+	r := router.SetupRouter(cfg)
 
 	// 启动服务
 	log.Printf("Server starting on port %s", cfg.Server.Port)
@@ -960,14 +961,14 @@ func main() {
 }
 ```
 
-- [ ] **Step 5: 验证编译**
+- [ ] **Step 6: 验证编译**
 
 ```bash
 cd server && go build -o /tmp/vibeblog-server ./cmd/main.go
 # Expected: no errors
 ```
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add server/
