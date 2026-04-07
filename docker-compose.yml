@@ -29,5 +29,30 @@ services:
       timeout: 5s
       retries: 5
 
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: vibeblog-server
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=vibeblog
+      - DB_PASSWORD=vibeblog123
+      - DB_NAME=vibe_blog
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=vibeblog-dev-secret
+      - SERVER_PORT=8080
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./server:/app
+
 volumes:
   mysql_data:
