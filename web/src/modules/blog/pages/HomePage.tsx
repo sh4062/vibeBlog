@@ -1,53 +1,47 @@
 // web/src/modules/blog/pages/HomePage.tsx
-import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
-import { blogApi } from '@/modules/blog/api/blogApi'
-import ArticleCard from '@/modules/blog/components/ArticleCard'
-import Loading from '@/shared/components/Loading'
+import { useState, useEffect } from 'react'
+import DraggableGrid from '@/shared/components/DraggableGrid'
+import { getModules, type ModuleConfig } from '@/config/modules'
 
 export default function HomePage() {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['articles', { page: 1, limit: 5 }],
-    queryFn: () => blogApi.getArticles({ page: 1, limit: 5 }),
-  })
+  const [modules, setModules] = useState<ModuleConfig[]>([])
+  const [loading, setLoading] = useState(true)
 
-  if (isLoading) return <Loading />
-  if (error) return <div className="text-red-500">加载失败</div>
+  useEffect(() => {
+    getModules().then((mods) => {
+      setModules(mods)
+      setLoading(false)
+    })
+  }, [])
 
-  // NOTE: blogApi returns unwrapped data, so access data.articles directly
-  const articles = data?.articles || []
+  if (loading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
+  if (modules.length === 0) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center text-gray-500">
+        暂无模块
+      </div>
+    )
+  }
 
   return (
-    <div>
-      <section className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          欢迎来到 VibeBlog
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-8 -m-8">
+      <div className="mb-8 text-center">
+        <h1 className="text-3xl font-bold text-white mb-2">
+          我的个人主页
         </h1>
-        <p className="text-gray-600">
-          一个简洁的个人博客，记录技术、生活与思考。
+        <p className="text-white/60 text-sm">
+          拖拽卡片调整布局
         </p>
-      </section>
+      </div>
 
-      <section>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">最新文章</h2>
-          <Link to="/blog" className="text-blue-600 hover:text-blue-700">
-            查看全部 →
-          </Link>
-        </div>
-
-        {articles.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
-            暂无文章
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {articles.map((article) => (
-              <ArticleCard key={article.id} article={article} />
-            ))}
-          </div>
-        )}
-      </section>
+      <DraggableGrid modules={modules} />
     </div>
   )
 }
