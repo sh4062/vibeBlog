@@ -5,6 +5,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"vibeblog/server/internal/modules/auth/handler"
 	"vibeblog/server/internal/modules/auth/service"
+	adminHandler "vibeblog/server/internal/modules/admin/handler"
+	adminService "vibeblog/server/internal/modules/admin/service"
 	blogHandler "vibeblog/server/internal/modules/blog/handler"
 	blogRepo "vibeblog/server/internal/modules/blog/repository"
 	blogService "vibeblog/server/internal/modules/blog/service"
@@ -62,6 +64,34 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 	site := api.Group("/site")
 	{
 		site.GET("/config", blogHdl.GetSiteConfig)
+	}
+
+	// 管理后台路由（需要认证）
+	adminSvc := adminService.NewAdminService(database.DB)
+	adminHdl := adminHandler.NewAdminHandler(adminSvc)
+
+	admin := api.Group("/admin").Use(middleware.AuthRequired())
+	{
+		// 统计
+		admin.GET("/stats", adminHdl.GetStats)
+
+		// 文章管理
+		admin.GET("/articles", adminHdl.ListArticles)
+		admin.GET("/articles/:id", adminHdl.GetArticle)
+		admin.POST("/articles", adminHdl.CreateArticle)
+		admin.PUT("/articles/:id", adminHdl.UpdateArticle)
+		admin.DELETE("/articles/:id", adminHdl.DeleteArticle)
+		admin.POST("/articles/:id/publish", adminHdl.PublishArticle)
+
+		// 标签管理
+		admin.GET("/tags", adminHdl.ListTags)
+		admin.POST("/tags", adminHdl.CreateTag)
+		admin.PUT("/tags/:id", adminHdl.UpdateTag)
+		admin.DELETE("/tags/:id", adminHdl.DeleteTag)
+
+		// 站点设置
+		admin.GET("/site/config", adminHdl.GetSiteConfig)
+		admin.PUT("/site/config", adminHdl.UpdateSiteConfig)
 	}
 
 	return r
