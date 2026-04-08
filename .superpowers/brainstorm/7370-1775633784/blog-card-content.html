@@ -1,0 +1,80 @@
+<h2>Blog 卡片内容</h2>
+<p class="subtitle">博客模块在首页卡片中显示什么内容？</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>文章列表（3-5篇）</h3>
+      <p>卡片内直接展示最新文章标题列表，点击标题可跳转详情页。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>统计 + 最近一篇</h3>
+      <p>显示文章总数、标签数等统计，+ 最近一篇文章的标题和摘要。</p>
+    </div>
+  </div>
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>封面风格</h3>
+      <p>大卡片展示一篇特色文章的封面图 + 标题，类似杂志封面。</p>
+    </div>
+  </div>
+</div>
+
+<div class="split" style="margin-top: 24px;">
+  <div class="mockup">
+    <div class="mockup-header">A - 文章列表</div>
+    <div class="mockup-body" style="height: 180px; padding: 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; color: white;">
+      <div style="font-weight: bold; margin-bottom: 12px; display: flex; justify-content: space-between;">
+        <span>📝 博客</span>
+        <span style="font-size: 11px; opacity: 0.8;">全部 →</span>
+      </div>
+      <div style="font-size: 13px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.2);">
+        Go 并发编程实战
+        <span style="font-size: 10px; opacity: 0.7; float: right;">2天前</span>
+      </div>
+      <div style="font-size: 13px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.2);">
+        React 19 新特性解析
+        <span style="font-size: 10px; opacity: 0.7; float: right;">5天前</span>
+      </div>
+      <div style="font-size: 13px;">
+        Docker 部署最佳实践
+        <span style="font-size: 10px; opacity: 0.7; float: right;">1周前</span>
+      </div>
+    </div>
+  </div>
+  <div class="mockup">
+    <div class="mockup-header">B - 统计 + 最近</div>
+    <div class="mockup-body" style="height: 180px; padding: 16px; background: #fff; border-radius: 12px; border: 1px solid #e5e7eb;">
+      <div style="font-weight: bold; margin-bottom: 12px;">📝 博客</div>
+      <div style="display: flex; gap: 16px; margin-bottom: 12px;">
+        <div style="text-align: center;">
+          <div style="font-size: 20px; font-weight: bold; color: #667eea;">128</div>
+          <div style="font-size: 10px; color: #666;">文章</div>
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 20px; font-weight: bold; color: #667eea;">15</div>
+          <div style="font-size: 10px; color: #666;">标签</div>
+        </div>
+      </div>
+      <div style="background: #f3f4f6; padding: 10px; border-radius: 8px;">
+        <div style="font-size: 12px; font-weight: 500;">Go 并发编程实战</div>
+        <div style="font-size: 11px; color: #666; margin-top: 4px;">探索 Go 语言的并发模型...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mockup" style="margin-top: 16px;">
+  <div class="mockup-header">C - 封面风格</div>
+  <div class="mockup-body" style="height: 200px; background: url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600') center/cover; border-radius: 12px; position: relative;">
+    <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 16px; background: linear-gradient(transparent, rgba(0,0,0,0.8)); border-radius: 0 0 12px 12px; color: white;">
+      <div style="font-size: 11px; opacity: 0.8;">📝 最新文章</div>
+      <div style="font-size: 16px; font-weight: bold; margin-top: 4px;">Go 并发编程实战指南</div>
+    </div>
+  </div>
+</div>

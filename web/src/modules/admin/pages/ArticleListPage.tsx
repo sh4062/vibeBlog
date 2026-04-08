@@ -89,6 +89,7 @@ export default function ArticleListPage() {
               <tr className="border-b border-white/10">
                 <th className="px-4 py-3 text-left text-white/60 font-medium">标题</th>
                 <th className="px-4 py-3 text-left text-white/60 font-medium">状态</th>
+                <th className="px-4 py-3 text-left text-white/60 font-medium">标签</th>
                 <th className="px-4 py-3 text-left text-white/60 font-medium">阅读量</th>
                 <th className="px-4 py-3 text-left text-white/60 font-medium">发布时间</th>
                 <th className="px-4 py-3 text-right text-white/60 font-medium">操作</th>
@@ -108,6 +109,18 @@ export default function ArticleListPage() {
                     >
                       {article.status === 'published' ? '已发布' : '草稿'}
                     </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex gap-1">
+                      {article.tags?.slice(0, 3).map((tag) => (
+                        <span key={tag.id} className="px-2 py-0.5 bg-purple-500/20 text-purple-300 rounded text-xs">
+                          {tag.name}
+                        </span>
+                      ))}
+                      {article.tags?.length > 3 && (
+                        <span className="text-white/40 text-xs">+{article.tags.length - 3}</span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-white/60">{article.view_count}</td>
                   <td className="px-4 py-3 text-white/60">

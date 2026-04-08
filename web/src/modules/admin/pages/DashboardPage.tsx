@@ -5,14 +5,20 @@ import { adminApi } from '@/modules/admin/api/adminApi'
 import StatsCard from '@/modules/admin/components/StatsCard'
 
 export default function DashboardPage() {
-  const { data, isLoading } = useQuery({
+  const { data: statsData, isLoading: statsLoading } = useQuery({
     queryKey: ['adminStats'],
     queryFn: () => adminApi.getStats(),
   })
 
-  const stats = data?.data?.data
+  const { data: articlesData } = useQuery({
+    queryKey: ['adminArticles', { page: 1, limit: 5 }],
+    queryFn: () => adminApi.getArticles({ page: 1, limit: 5 }),
+  })
 
-  if (isLoading) {
+  const stats = statsData?.data?.data
+  const recentArticles = articlesData?.data?.data?.data || []
+
+  if (statsLoading) {
     return <div className="text-white/60">加载中...</div>
   }
 
@@ -27,7 +33,50 @@ export default function DashboardPage() {
         <StatsCard title="总阅读量" value={stats?.total_views || 0} icon="👁️" color="text-blue-400" />
       </div>
 
+      {/* 最近文章 */}
       <div className="bg-white/10 backdrop-blur border border-white/20 rounded-xl p-6 mb-8">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold text-white">最近文章</h2>
+          <Link to="/admin/articles" className="text-sm text-white/60 hover:text-white">
+            查看全部 →
+          </Link>
+        </div>
+        {recentArticles.length === 0 ? (
+          <p className="text-white/40">暂无文章</p>
+        ) : (
+          <div className="space-y-3">
+            {recentArticles.map((article) => (
+              <div key={article.id} className="flex justify-between items-center py-2 border-b border-white/10 last:border-0">
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`px-2 py-0.5 rounded text-xs ${
+                      article.status === 'published'
+                        ? 'bg-green-500/20 text-green-400'
+                        : 'bg-amber-500/20 text-amber-400'
+                    }`}
+                  >
+                    {article.status === 'published' ? '已发布' : '草稿'}
+                  </span>
+                  <Link
+                    to={`/admin/articles/${article.id}/edit`}
+                    className="text-white hover:text-purple-400"
+                  >
+                    {article.title}
+                  </Link>
+                </div>
+                <span className="text-white/40 text-sm">
+                  {article.published_at
+                    ? new Date(article.published_at).toLocaleDateString('zh-CN')
+                    : '-'}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 快捷操作 */}
+      <div className="bg-white/10 backdrop-blur border border-white/20 rounded-xl p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold text-white">快捷操作</h2>
         </div>
