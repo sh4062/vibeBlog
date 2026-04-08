@@ -89,6 +89,30 @@ func (h *BlogHandler) GetArchive(c *gin.Context) {
 	utils.SuccessResponse(c, archive)
 }
 
+// GetArchiveByMonth 获取指定年月的文章
+// GET /api/blog/archive/:year/:month
+func (h *BlogHandler) GetArchiveByMonth(c *gin.Context) {
+	year, err := strconv.Atoi(c.Param("year"))
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "INVALID_YEAR", "无效的年份")
+		return
+	}
+
+	month, err := strconv.Atoi(c.Param("month"))
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusBadRequest, "INVALID_MONTH", "无效的月份")
+		return
+	}
+
+	articles, err := h.articleSvc.GetArticlesByMonth(year, month)
+	if err != nil {
+		utils.ErrorResponse(c, http.StatusInternalServerError, "DATABASE_ERROR", "获取文章失败")
+		return
+	}
+
+	utils.SuccessResponse(c, articles)
+}
+
 // Search 搜索文章
 // GET /api/blog/search?q=keyword&limit=10
 func (h *BlogHandler) Search(c *gin.Context) {

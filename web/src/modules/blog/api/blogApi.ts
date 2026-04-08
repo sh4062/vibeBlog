@@ -50,6 +50,12 @@ export const blogApi = {
     return res.data.data
   },
 
+  // 获取指定年月的文章
+  getArchiveByMonth: async (year: number, month: number) => {
+    const res = await request.get<ApiResponse<Article[]>>(`/blog/archive/${year}/${month}`)
+    return res.data.data
+  },
+
   // 搜索文章
   search: async (params: { q: string; limit?: number }) => {
     const res = await request.get<ApiResponse<Article[]>>('/blog/search', { params })

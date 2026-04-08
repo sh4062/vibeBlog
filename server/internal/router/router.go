@@ -54,6 +54,7 @@ func SetupRouter(cfg *config.Config) *gin.Engine {
 		blog.GET("/articles/:id", blogHdl.GetArticle)
 		blog.GET("/tags", blogHdl.GetTags)
 		blog.GET("/archive", blogHdl.GetArchive)
+		blog.GET("/archive/:year/:month", blogHdl.GetArchiveByMonth)
 		blog.GET("/search", blogHdl.Search)
 	}
 

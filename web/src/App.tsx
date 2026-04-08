@@ -7,6 +7,7 @@ import ArticleListPage from '@/modules/blog/pages/ArticleListPage'
 import ArticleDetailPage from '@/modules/blog/pages/ArticleDetailPage'
 import TagPage from '@/modules/blog/pages/TagPage'
 import ArchivePage from '@/modules/blog/pages/ArchivePage'
+import ArchiveMonthPage from '@/modules/blog/pages/ArchiveMonthPage'
 import SearchPage from '@/modules/blog/pages/SearchPage'
 import AboutPage from '@/modules/blog/pages/AboutPage'
 
@@ -24,6 +25,7 @@ function App() {
             <Route path="/blog/tag" element={<TagPage />} />
             <Route path="/blog/tag/:slug" element={<ArticleListPage />} />
             <Route path="/blog/archive" element={<ArchivePage />} />
+            <Route path="/blog/archive/:year/:month" element={<ArchiveMonthPage />} />
             <Route path="/blog/search" element={<SearchPage />} />
             <Route path="/about" element={<AboutPage />} />
           </Route>
