@@ -27,26 +27,38 @@ interface SiteConfigResponse {
 
 export const blogApi = {
   // 获取文章列表
-  getArticles: (params: { page?: number; limit?: number; tag?: string }) =>
-    request.get<ApiResponse<ArticleListResponse>>('/blog/articles', { params }),
+  getArticles: async (params: { page?: number; limit?: number; tag?: string }) => {
+    const res = await request.get<ApiResponse<ArticleListResponse>>('/blog/articles', { params })
+    return res.data.data
+  },
 
   // 获取文章详情
-  getArticle: (id: number) =>
-    request.get<ApiResponse<Article>>(`/blog/articles/${id}`),
+  getArticle: async (id: number) => {
+    const res = await request.get<ApiResponse<Article>>(`/blog/articles/${id}`)
+    return res.data.data
+  },
 
   // 获取标签列表
-  getTags: () =>
-    request.get<ApiResponse<Tag[]>>('/blog/tags'),
+  getTags: async () => {
+    const res = await request.get<ApiResponse<Tag[]>>('/blog/tags')
+    return res.data.data
+  },
 
   // 获取归档数据
-  getArchive: () =>
-    request.get<ApiResponse<ArchiveData>>('/blog/archive'),
+  getArchive: async () => {
+    const res = await request.get<ApiResponse<ArchiveData>>('/blog/archive')
+    return res.data.data
+  },
 
   // 搜索文章
-  search: (params: { q: string; limit?: number }) =>
-    request.get<ApiResponse<Article[]>>('/blog/search', { params }),
+  search: async (params: { q: string; limit?: number }) => {
+    const res = await request.get<ApiResponse<Article[]>>('/blog/search', { params })
+    return res.data.data
+  },
 
   // 获取站点配置
-  getSiteConfig: () =>
-    request.get<ApiResponse<SiteConfigResponse>>('/site/config'),
+  getSiteConfig: async () => {
+    const res = await request.get<ApiResponse<SiteConfigResponse>>('/site/config')
+    return res.data.data
+  },
 }
