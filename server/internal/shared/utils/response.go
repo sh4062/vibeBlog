@@ -81,3 +81,15 @@ func ValidationError(c *gin.Context, message string) {
 		Error: &ErrorInfo{Code: "VALIDATION_ERROR", Message: message},
 	})
 }
+
+// SuccessResponse sends a success response with data
+func SuccessResponse(c *gin.Context, data any) {
+	c.JSON(http.StatusOK, Response{Data: data})
+}
+
+// ErrorResponse sends an error response with custom code and message
+func ErrorResponse(c *gin.Context, statusCode int, code string, message string) {
+	c.JSON(statusCode, Response{
+		Error: &ErrorInfo{Code: code, Message: message},
+	})
+}
