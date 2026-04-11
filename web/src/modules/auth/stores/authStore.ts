@@ -19,22 +19,32 @@ export const useAuthStore = create<AuthState>()(
       accessToken: null,
       refreshToken: null,
       isAuthenticated: false,
-      setAuth: (user, accessToken, refreshToken) =>
+      setAuth: (user, accessToken, refreshToken) => {
+        // 同步存到 localStorage，供 request.ts 使用
+        localStorage.setItem('access_token', accessToken)
+        localStorage.setItem('refresh_token', refreshToken)
         set({
           user,
           accessToken,
           refreshToken,
           isAuthenticated: true,
-        }),
-      clearAuth: () =>
+        })
+      },
+      clearAuth: () => {
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
         set({
           user: null,
           accessToken: null,
           refreshToken: null,
           isAuthenticated: false,
-        }),
-      setTokens: (accessToken, refreshToken) =>
-        set({ accessToken, refreshToken }),
+        })
+      },
+      setTokens: (accessToken, refreshToken) => {
+        localStorage.setItem('access_token', accessToken)
+        localStorage.setItem('refresh_token', refreshToken)
+        set({ accessToken, refreshToken })
+      },
     }),
     {
       name: 'auth-storage',

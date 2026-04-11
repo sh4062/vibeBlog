@@ -40,42 +40,71 @@ interface TagInput {
 
 export const adminApi = {
   // 统计
-  getStats: () => request.get<ApiResponse<Stats>>('/admin/stats'),
+  getStats: async () => {
+    const res = await request.get<ApiResponse<Stats>>('/admin/stats')
+    return res.data.data
+  },
 
   // 文章管理
-  getArticles: (params: { page?: number; limit?: number; status?: string; keyword?: string }) =>
-    request.get<ApiResponse<PagedResponse<Article>>>('/admin/articles', { params }),
+  getArticles: async (params: { page?: number; limit?: number; status?: string; keyword?: string }) => {
+    const res = await request.get<ApiResponse<PagedResponse<Article>>>('/admin/articles', { params })
+    return res.data.data
+  },
 
-  getArticle: (id: number) =>
-    request.get<ApiResponse<Article>>(`/admin/articles/${id}`),
+  getArticle: async (id: number) => {
+    const res = await request.get<ApiResponse<Article>>(`/admin/articles/${id}`)
+    return res.data.data
+  },
 
-  createArticle: (data: ArticleInput) =>
-    request.post<ApiResponse<Article>>('/admin/articles', data),
+  createArticle: async (data: ArticleInput) => {
+    const res = await request.post<ApiResponse<Article>>('/admin/articles', data)
+    return res.data.data
+  },
 
-  updateArticle: (id: number, data: ArticleInput) =>
-    request.put<ApiResponse<Article>>(`/admin/articles/${id}`, data),
+  updateArticle: async (id: number, data: ArticleInput) => {
+    const res = await request.put<ApiResponse<Article>>(`/admin/articles/${id}`, data)
+    return res.data.data
+  },
 
-  deleteArticle: (id: number) =>
-    request.delete<ApiResponse<null>>(`/admin/articles/${id}`),
+  deleteArticle: async (id: number) => {
+    const res = await request.delete<ApiResponse<null>>(`/admin/articles/${id}`)
+    return res.data
+  },
 
-  publishArticle: (id: number) =>
-    request.post<ApiResponse<Article>>(`/admin/articles/${id}/publish`),
+  publishArticle: async (id: number) => {
+    const res = await request.post<ApiResponse<Article>>(`/admin/articles/${id}/publish`)
+    return res.data.data
+  },
 
   // 标签管理
-  getTags: () => request.get<ApiResponse<Tag[]>>('/admin/tags'),
+  getTags: async () => {
+    const res = await request.get<ApiResponse<Tag[]>>('/admin/tags')
+    return res.data.data
+  },
 
-  createTag: (data: TagInput) =>
-    request.post<ApiResponse<Tag>>('/admin/tags', data),
+  createTag: async (data: TagInput) => {
+    const res = await request.post<ApiResponse<Tag>>('/admin/tags', data)
+    return res.data.data
+  },
 
-  updateTag: (id: number, data: TagInput) =>
-    request.put<ApiResponse<Tag>>(`/admin/tags/${id}`, data),
+  updateTag: async (id: number, data: TagInput) => {
+    const res = await request.put<ApiResponse<Tag>>(`/admin/tags/${id}`, data)
+    return res.data.data
+  },
 
-  deleteTag: (id: number) =>
-    request.delete<ApiResponse<null>>(`/admin/tags/${id}`),
+  deleteTag: async (id: number) => {
+    const res = await request.delete<ApiResponse<null>>(`/admin/tags/${id}`)
+    return res.data
+  },
 
   // 站点设置
-  getSiteConfig: () => request.get<ApiResponse<Record<string, string>>>('/admin/site/config'),
+  getSiteConfig: async () => {
+    const res = await request.get<ApiResponse<Record<string, string>>>('/admin/site/config')
+    return res.data.data
+  },
 
-  updateSiteConfig: (data: Record<string, string>) =>
-    request.put<ApiResponse<null>>('/admin/site/config', data),
+  updateSiteConfig: async (data: Record<string, string>) => {
+    const res = await request.put<ApiResponse<null>>('/admin/site/config', data)
+    return res.data
+  },
 }

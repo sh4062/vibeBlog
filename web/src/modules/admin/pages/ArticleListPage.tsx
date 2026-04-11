@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams, Link } from 'react-router-dom'
 import { adminApi } from '@/modules/admin/api/adminApi'
+import type { Article } from '@/shared/types/models'
 
 export default function ArticleListPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -30,8 +31,8 @@ export default function ArticleListPage() {
     },
   })
 
-  const articles = data?.data?.data?.data || []
-  const pagination = data?.data?.data?.pagination
+  const articles: Article[] = data?.data || []
+  const pagination = data?.pagination
 
   const handleDelete = (id: number) => {
     if (confirm('确定删除这篇文章？')) {
@@ -117,7 +118,7 @@ export default function ArticleListPage() {
                           {tag.name}
                         </span>
                       ))}
-                      {article.tags?.length > 3 && (
+                      {article.tags && article.tags.length > 3 && (
                         <span className="text-white/40 text-xs">+{article.tags.length - 3}</span>
                       )}
                     </div>

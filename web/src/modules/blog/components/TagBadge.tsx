@@ -10,12 +10,13 @@ interface Props {
 export default function TagBadge({ tag, showCount = false }: Props) {
   return (
     <Link
-      to={`/blog/tag/${tag.slug}`}
-      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors"
+      to={`/blog?tag=${tag.slug}`}
+      className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 text-purple-700 rounded-full text-xs font-medium transition-colors"
     >
+      <span className="text-purple-400">#</span>
       {tag.name}
       {showCount && tag.article_count !== undefined && (
-        <span className="ml-1 text-blue-600">({tag.article_count})</span>
+        <span className="text-purple-400/60 ml-0.5">({tag.article_count})</span>
       )}
     </Link>
   )

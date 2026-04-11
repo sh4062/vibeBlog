@@ -18,21 +18,20 @@ export default function SettingsPage() {
     social_links: '',
   })
 
-  const { data, isLoading } = useQuery({
+  const { data: config, isLoading } = useQuery({
     queryKey: ['adminSiteConfig'],
     queryFn: () => adminApi.getSiteConfig(),
   })
 
   useEffect(() => {
-    if (data?.data?.data) {
-      const config = data.data.data
+    if (config) {
       setForm({
         avatar: config.avatar || '',
         about_content: config.about_content || '',
         social_links: config.social_links || '',
       })
     }
-  }, [data])
+  }, [config])
 
   const updateMutation = useMutation({
     mutationFn: (data: typeof form) => adminApi.updateSiteConfig(data),

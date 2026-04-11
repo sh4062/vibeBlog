@@ -3,9 +3,10 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { adminApi } from '@/modules/admin/api/adminApi'
 import StatsCard from '@/modules/admin/components/StatsCard'
+import type { Article } from '@/shared/types/models'
 
 export default function DashboardPage() {
-  const { data: statsData, isLoading: statsLoading } = useQuery({
+  const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['adminStats'],
     queryFn: () => adminApi.getStats(),
   })
@@ -15,8 +16,7 @@ export default function DashboardPage() {
     queryFn: () => adminApi.getArticles({ page: 1, limit: 5 }),
   })
 
-  const stats = statsData?.data?.data
-  const recentArticles = articlesData?.data?.data?.data || []
+  const recentArticles: Article[] = articlesData?.data || []
 
   if (statsLoading) {
     return <div className="text-white/60">加载中...</div>

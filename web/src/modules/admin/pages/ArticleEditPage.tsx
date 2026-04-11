@@ -8,6 +8,7 @@ import gfm from '@bytemd/plugin-gfm'
 import highlight from '@bytemd/plugin-highlight'
 import 'bytemd/dist/index.css'
 import 'highlight.js/styles/github-dark.css'
+import type { Tag } from '@/shared/types/models'
 
 const plugins = [gfm(), highlight()]
 
@@ -36,21 +37,20 @@ export default function ArticleEditPage() {
   })
 
   // 获取文章详情（编辑模式）
-  const { data: articleData } = useQuery({
+  const { data: article } = useQuery({
     queryKey: ['adminArticle', id],
     queryFn: () => adminApi.getArticle(parseInt(id!, 10)),
     enabled: isEdit,
   })
 
   // 获取标签列表
-  const { data: tagsData } = useQuery({
+  const { data: tags } = useQuery({
     queryKey: ['adminTags'],
     queryFn: () => adminApi.getTags(),
   })
 
   useEffect(() => {
-    if (articleData?.data?.data) {
-      const article = articleData.data.data
+    if (article) {
       setForm({
         title: article.title,
         slug: article.slug,
@@ -58,10 +58,10 @@ export default function ArticleEditPage() {
         content: article.content || '',
         cover_image: article.cover_image || '',
         status: article.status || 'draft',
-        tag_ids: article.tags?.map((t) => t.id) || [],
+        tag_ids: article.tags?.map((t: Tag) => t.id) || [],
       })
     }
-  }, [articleData])
+  }, [article])
 
   const createMutation = useMutation({
     mutationFn: (data: typeof form) => adminApi.createArticle(data),
@@ -87,8 +87,6 @@ export default function ArticleEditPage() {
       createMutation.mutate(data)
     }
   }
-
-  const tags = tagsData?.data?.data || []
 
   return (
     <div>
@@ -167,9 +165,10 @@ export default function ArticleEditPage() {
           <div className="bg-white/10 backdrop-blur border border-white/20 rounded-xl p-4">
             <label className="block text-white/60 text-sm mb-2">标签</label>
             <div className="flex flex-wrap gap-2">
-              {tags.map((tag) => (
+              {tags?.map((tag: Tag) => (
                 <button
                   key={tag.id}
+                  type="button"
                   onClick={() => {
                     const tagIds = form.tag_ids.includes(tag.id)
                       ? form.tag_ids.filter((id) => id !== tag.id)

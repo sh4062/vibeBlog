@@ -109,7 +109,7 @@ export default function TagManagePage() {
     },
   })
 
-  const tags = data?.data?.data || []
+  const tags = data || []
 
   const handleSave = (data: { name: string; slug?: string; description?: string }) => {
     if (modal.tag) {
