@@ -8,6 +8,7 @@ import (
 	"vibeblog/server/internal/router"
 	authModel "vibeblog/server/internal/modules/auth/model"
 	blogModel "vibeblog/server/internal/modules/blog/model"
+	assistantModel "vibeblog/server/internal/modules/assistant/model"
 	authService "vibeblog/server/internal/modules/auth/service"
 )
 
@@ -37,6 +38,10 @@ func main() {
 	}
 	if err := blogModel.AutoMigrateSiteConfig(); err != nil {
 		log.Fatalf("Site config migration failed: %v", err)
+	}
+	assistantModel.Init(database.DB)
+	if err := assistantModel.AutoMigrateAssistantConfig(); err != nil {
+		log.Fatalf("Assistant config migration failed: %v", err)
 	}
 	log.Println("Database migration completed")
 

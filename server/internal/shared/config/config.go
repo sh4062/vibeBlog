@@ -11,6 +11,11 @@ type Config struct {
 	Database DatabaseConfig
 	Redis    RedisConfig
 	JWT      JWTConfig
+	OpenAI   OpenAIConfig
+}
+
+type OpenAIConfig struct {
+	BaseURL string
 }
 
 type ServerConfig struct {
@@ -56,6 +61,9 @@ func Load() *Config {
 			Secret:          getEnv("JWT_SECRET", "vibeblog-secret-change-in-production"),
 			AccessTokenExp:  getEnvInt("JWT_ACCESS_EXP", 15),
 			RefreshTokenExp: getEnvInt("JWT_REFRESH_EXP", 7),
+		},
+		OpenAI: OpenAIConfig{
+			BaseURL: getEnv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
 		},
 	}
 }

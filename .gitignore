@@ -23,6 +23,7 @@ build/
 # Server
 server/main
 server/tmp/
+server/uploads/
 
 # Environment
 .env

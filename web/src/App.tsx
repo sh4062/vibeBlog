@@ -16,6 +16,7 @@ import ArticleListPageAdmin from '@/modules/admin/pages/ArticleListPage'
 import ArticleEditPage from '@/modules/admin/pages/ArticleEditPage'
 import TagManagePage from '@/modules/admin/pages/TagManagePage'
 import SettingsPage from '@/modules/admin/pages/SettingsPage'
+import AssistantPage from '@/modules/admin/pages/AssistantPage'
 
 const queryClient = new QueryClient()
 
@@ -47,6 +48,7 @@ function App() {
             <Route path="/admin/articles/new" element={<ArticleEditPage />} />
             <Route path="/admin/articles/:id/edit" element={<ArticleEditPage />} />
             <Route path="/admin/tags" element={<TagManagePage />} />
+            <Route path="/admin/assistant" element={<AssistantPage />} />
             <Route path="/admin/settings" element={<SettingsPage />} />
           </Route>
         </Routes>

@@ -5,6 +5,7 @@ const navItems = [
   { path: '/admin', label: '仪表盘', icon: '📊' },
   { path: '/admin/articles', label: '文章管理', icon: '📝' },
   { path: '/admin/tags', label: '标签管理', icon: '🏷️' },
+  { path: '/admin/assistant', label: 'AI 助手', icon: '🤖' },
   { path: '/admin/settings', label: '站点设置', icon: '⚙️' },
 ]
 

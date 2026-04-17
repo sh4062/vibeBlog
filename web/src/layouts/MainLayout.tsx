@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom'
 import Navbar from '@/shared/components/Navbar'
+import AssistantWidget from '@/modules/blog/components/assistant/AssistantWidget'
 
 export default function MainLayout() {
   return (
@@ -31,6 +32,7 @@ export default function MainLayout() {
           </div>
         </div>
       </footer>
+      <AssistantWidget />
     </div>
   )
 }
